@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>コスメ総合ランキング2026 | BeautyLab</title>
+  <meta name="description" content="2026年最新の美容・コスメ総合ランキング。スキンケア・メイク・ヘアケアを徹底比較。実際に使ったリアルな口コミと評価でおすすめ商品を紹介。">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .ranking-page-hero {
+      background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .ranking-page-hero h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+    }
+    .ranking-tabs {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ranking-tab {
+      padding: 10px 24px;
+      border-radius: 100px;
+      background: var(--bg-gray);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .ranking-tab.active,
+    .ranking-tab:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .update-info {
+      max-width: 1100px;
+      margin: 0 auto 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="site-logo">Beauty<span>Lab</span>✦</a>
+    <nav>
+      <ul class="header-nav">
+        <li><a href="index.html">ホーム</a></li>
+        <li><a href="ranking.html" class="active">ランキング</a></li>
+        <li><a href="index.html#skincare">スキンケア</a></li>
+        <li><a href="index.html#makeup">メイク</a></li>
+        <li><a href="articles.html">記事一覧</a></li>
+      </ul>
+    </nav>
+    <button class="hamburger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-nav">
+  <div class="mobile-nav-panel">
+    <a href="index.html">🏠 ホーム</a>
+    <a href="ranking.html">🏆 ランキング</a>
+    <a href="articles.html">📝 記事一覧</a>
+  </div>
+</div>
+
+<div class="ranking-page-hero">
+  <h1>🏆 コスメ総合ランキング 2026年版</h1>
+  <p style="color:var(--text-light);font-size:14px;">実際に購入・使用した商品のみを掲載。毎月更新中。</p>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:32px 20px 0;">
+  <div class="update-info">
+    <span>📅 最終更新：2026年5月31日</span>
+    <span>|</span>
+    <span>対象商品数：47件</span>
+  </div>
+
+  <div class="ranking-tabs">
+    <button class="ranking-tab active" data-cat="all">総合</button>
+    <button class="ranking-tab" data-cat="skincare">スキンケア</button>
+    <button class="ranking-tab" data-cat="makeup">メイクアップ</button>
+    <button class="ranking-tab" data-cat="haircare">ヘアケア</button>
+    <button class="ranking-tab" data-cat="sunscreen">日焼け止め</button>
+    <button class="ranking-tab" data-cat="bodycare">ボディケア</button>
+  </div>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:0 20px 60px;">
+  <div class="ranking-list">
+
+    <div class="ranking-card" data-cat="skincare">
+      <div class="rank-badge rank-1">1</div>
+      <div class="product-img-wrap"><div class="product-img-placeholder">🧴</div></div>
+      <div class="product-info">
+        <div class="product-category">保湿化粧水</div>
+        <div class="product-name">ナチュリエ ハトムギ化粧水 500ml</div>
+        <div class="product-brand">イミュ</div>
+        <div class="product-stars">★★★★★ <span>(4.8 / 2,341件)</span></div>
+        <div class="product-price">¥880 <small>（税込）</small></div>
+        <ul class="point-list">
+          <li>プチプラ最強の保湿力でリピーター続出</li>
+          <li>500mlの大容量でコスパ抜群</li>
+          <li>全身に使えるので一本で完結</li>
+        </ul>
+        <div class="product-actions">
+          <a href="https://affiliate.rakuten.co.jp/YOUR_LINK" target="_blank" rel="nofollow noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+          <a href="https://www.amazon.co.jp/dp/YOUR_ASIN?tag=YOUR_ID" target="_blank" rel="nofollow noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="articles/hatsumugi-review.html" class="btn-detail">詳しいレビュー</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-card" data-cat="makeup">
+      <div class="rank-badge rank-2">2</div>
+      <div class="product-img-wrap"><div class="product-img-placeholder">💄</div></div>
+      <div class="product-info">
+        <div class="product-category">BBクリーム</div>
+        <div class="product-name">CEZANNE UVウルトラフィットBBクリーム</div>
+        <div class="product-brand">セザンヌ</div>
+        <div class="product-stars">★★★★★ <span>(4.8 / 3,201件)</span></div>
+        <div class="product-price">¥660 <small>（税込）</small></div>
+        <ul class="point-list">
+          <li>SPF50+・PA++++で日焼け止め効果あり</li>
+          <li>600円台なのに崩れにくくカバー力も高い</li>
+          <li>全3色展開で肌色に合わせやすい</li>
+        </ul>
+        <div class="product-actions">
+          <a href="https://affiliate.rakuten.co.jp/YOUR_LINK" target="_blank" rel="nofollow noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+          <a href="https://www.amazon.co.jp/dp/YOUR_ASIN?tag=YOUR_ID" target="_blank" rel="nofollow noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="articles/cezanne-bb-review.html" class="btn-detail">詳しいレビュー</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-card" data-cat="skincare">
+      <div class="rank-badge rank-3">3</div>
+      <div class="product-img-wrap"><div class="product-img-placeholder">✨</div></div>
+      <div class="product-info">
+        <div class="product-category">美容液</div>
+        <div class="product-name">肌ラボ 極潤プレミアム ヒアルロン液</div>
+        <div class="product-brand">ロート製薬</div>
+        <div class="product-stars">★★★★★ <span>(4.7 / 1,892件)</span></div>
+        <div class="product-price">¥1,430 <small>（税込）</small></div>
+        <ul class="point-list">
+          <li>5種のヒアルロン酸配合で深層保湿</li>
+          <li>乾燥が気になる冬季に特に効果的</li>
+          <li>すっきりとしたテクスチャーで使いやすい</li>
+        </ul>
+        <div class="product-actions">
+          <a href="https://affiliate.rakuten.co.jp/YOUR_LINK" target="_blank" rel="nofollow noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+          <a href="https://www.amazon.co.jp/dp/YOUR_ASIN?tag=YOUR_ID" target="_blank" rel="nofollow noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="articles/hadalabo-review.html" class="btn-detail">詳しいレビュー</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-card" data-cat="sunscreen">
+      <div class="rank-badge rank-other">4</div>
+      <div class="product-img-wrap"><div class="product-img-placeholder">☀️</div></div>
+      <div class="product-info">
+        <div class="product-category">日焼け止め</div>
+        <div class="product-name">アネッサ パーフェクトUV スキンケアミルク</div>
+        <div class="product-brand">資生堂</div>
+        <div class="product-stars">★★★★★ <span>(4.9 / 4,521件)</span></div>
+        <div class="product-price">¥2,310 <small>（税込）</small></div>
+        <ul class="point-list">
+          <li>SPF50+・PA++++の最高UVカット</li>
+          <li>汗・水に強いウォータープルーフ</li>
+          <li>保湿成分入りでスキンケアしながら焼けない</li>
+        </ul>
+        <div class="product-actions">
+          <a href="https://affiliate.rakuten.co.jp/YOUR_LINK" target="_blank" rel="nofollow noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+          <a href="https://www.amazon.co.jp/dp/YOUR_ASIN?tag=YOUR_ID" target="_blank" rel="nofollow noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="#" class="btn-detail">詳しいレビュー</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-card" data-cat="haircare">
+      <div class="rank-badge rank-other">5</div>
+      <div class="product-img-wrap"><div class="product-img-placeholder">💆</div></div>
+      <div class="product-info">
+        <div class="product-category">ヘアオイル</div>
+        <div class="product-name">BOTANIST ボタニカルヘアオイル（モイスト）</div>
+        <div class="product-brand">BOTANIST</div>
+        <div class="product-stars">★★★★☆ <span>(4.5 / 2,109件)</span></div>
+        <div class="product-price">¥1,628 <small>（税込）</small></div>
+        <ul class="point-list">
+          <li>植物由来成分で髪にやさしいヘアオイル</li>
+          <li>ドライヤー前の熱ダメージを軽減</li>
+          <li>甘いフルーティな香りが続く</li>
+        </ul>
+        <div class="product-actions">
+          <a href="https://affiliate.rakuten.co.jp/YOUR_LINK" target="_blank" rel="nofollow noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+          <a href="https://www.amazon.co.jp/dp/YOUR_ASIN?tag=YOUR_ID" target="_blank" rel="nofollow noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="#" class="btn-detail">詳しいレビュー</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="affiliate-notice">
+      ⚠️ 当サイトはアフィリエイトプログラムに参加しています。記事内のリンクから商品を購入した場合、当サイトに報酬が発生することがあります。
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 BeautyLab All Rights Reserved.</span>
+      <a href="index.html" style="color:#aaa;">トップへ戻る</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  // ランキングタブ切り替え
+  const tabs = document.querySelectorAll('.ranking-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const cat = tab.dataset.cat;
+      document.querySelectorAll('.ranking-card').forEach(card => {
+        card.style.display = (cat === 'all' || card.dataset.cat === cat) ? 'grid' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>
