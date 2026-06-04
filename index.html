@@ -9,7 +9,7 @@
   <meta property="og:title" content="BeautyBests - 美容・コスメ徹底比較レビュー">
   <meta property="og:description" content="美容・スキンケア・化粧品のリアルなレビューとランキングを掲載。">
   <meta property="og:type" content="website">
-  <link rel="canonical" href="https://your-domain.com/">
+  <link rel="canonical" href="https://beauty-bests.com/">
   <link rel="stylesheet" href="css/style.css">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-W2QW21WVT5"></script>
@@ -25,6 +25,10 @@
 <header class="site-header">
   <div class="header-inner">
     <a href="index.html" class="site-logo">Beauty<span>Bests</span>✦</a>
+    <form class="header-search" action="search.html" method="get" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" name="q" placeholder="コスメ・ブランド名で検索">
+    </form>
     <nav>
       <ul class="header-nav">
         <li><a href="index.html" class="active">ホーム</a></li>
@@ -32,7 +36,6 @@
         <li><a href="#skincare">スキンケア</a></li>
         <li><a href="#makeup">メイク</a></li>
         <li><a href="#haircare">ヘアケア</a></li>
-        <li><a href="articles.html">記事一覧</a></li>
       </ul>
     </nav>
     <button class="hamburger" aria-label="メニュー">
@@ -46,22 +49,21 @@
   <div class="mobile-nav-panel">
     <a href="index.html">🏠 ホーム</a>
     <a href="ranking.html">🏆 ランキング</a>
-    <a href="#skincare">✨ スキンケア</a>
+    <a href="#skincare">🧴 スキンケア</a>
     <a href="#makeup">💄 メイク</a>
     <a href="#haircare">💇 ヘアケア</a>
-    <a href="articles.html">📝 記事一覧</a>
   </div>
 </div>
 
 <!-- ===== ヒーロー ===== -->
 <section class="hero">
   <div class="hero-inner">
-    <span class="hero-badge">2026年最新版</span>
-    <h1>本当に<em>使えるコスメ</em>だけを<br>本音でレビュー</h1>
-    <p>プチプラ〜デパコスまで実際に使って検証。<br>成分・使い心地・コスパを徹底比較します。</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a href="ranking.html" class="btn btn-primary">🏆 総合ランキングを見る</a>
-      <a href="#articles" class="btn btn-outline">📝 最新記事を読む</a>
+    <span class="hero-badge">✦ 2026年最新版</span>
+    <h1>本当に<em>使えるコスメ</em>だけを<br>正直にレビュー</h1>
+    <p>プチプラ〜デパコスまで実際に使って検証。<br>成分・使い心地・コスパを分かりやすく比較します。</p>
+    <div class="hero-actions">
+      <a href="ranking.html" class="btn btn-primary">🏆 ランキングを見る</a>
+      <a href="#articles" class="btn btn-outline">📝 最新記事</a>
     </div>
   </div>
 </section>
@@ -763,11 +765,10 @@
 
 <!-- ===== バナーセクション ===== -->
 <section class="banner-section">
-  <div style="max-width:600px;margin:0 auto;">
-    <h2>🛍️ 楽天スーパーSALEを活用しよう</h2>
-    <p>楽天市場ではポイントアップキャンペーンが定期的に開催。同じアイテムでもお得に購入できます。</p>
-    <!-- 楽天バナーアフィリエイト（要差し替え） -->
-    <a href="https://affiliate.rakuten.co.jp/YOUR_BANNER_LINK" target="_blank" rel="nofollow noopener" class="btn btn-primary" style="background:white;color:#BF0000;">楽天市場でチェック →</a>
+  <div style="max-width:560px;margin:0 auto;">
+    <h2>🛍️ 楽天スーパーSALEでお得にゲット</h2>
+    <p>定期開催のポイントアップキャンペーンを活用して、同じ商品をお得に購入しましょう。</p>
+    <a href="https://www.rakuten.co.jp/" target="_blank" rel="nofollow noopener" class="btn" style="background:#fff;color:#bf0000;font-weight:700;">楽天市場でチェック →</a>
   </div>
 </section>
 
