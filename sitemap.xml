@@ -91,6 +91,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://beauty-bests.com/about.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://beauty-bests.com/contact.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://beauty-bests.com/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
