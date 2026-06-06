@@ -3,8 +3,9 @@
 :: Windowsタスクスケジューラから実行するバッチファイル
 
 :: 環境変数を設定（ここに自分のキーを入力）
-set ANTHROPIC_API_KEY=ここにAnthropicAPIキーを入力
-set GITHUB_TOKEN=ここにGitHubトークンを入力
+set ANTHROPIC_API_KEY=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
+set GITHUB_TOKEN=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
+set RAKUTEN_APP_ID=29bdb7e9-f214-400b-abe1-b302edb7d208
 
 :: スクリプトのディレクトリに移動
 cd /d "c:\Users\81907\Documents\cursor\beauty-site"
