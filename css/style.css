@@ -512,10 +512,18 @@ img { max-width: 100%; display: block; }
   .footer-bottom { flex-direction: column; text-align: center; }
   .sidebar { display: flex; }
 }
+.product-list { display: flex; flex-wrap: wrap; gap: 16px; margin: 24px 0; }
+.product-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; display: flex; gap: 16px; align-items: flex-start; background: #fff; flex: 1 1 280px; }
+.product-card img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+.product-card .product-info { display: flex; flex-direction: column; gap: 8px; }
+.product-card .product-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.5; }
+.product-card .product-price { font-size: 15px; font-weight: 800; color: var(--primary-dark); }
+
 @media (max-width: 480px) {
   .ranking-card { grid-template-columns: 36px 1fr; }
   .product-img-wrap { display: none; }
   .header-inner { padding: 0 16px; }
   .main-wrapper { padding: 20px 16px; }
   .category-nav { padding: 10px 16px; }
+  .product-card { flex-direction: column; }
 }

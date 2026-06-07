@@ -120,8 +120,8 @@ async function generateArticle(topic) {
   const productHtml = buildProductHtml(products, topic.product);
 
   const productSection = products.length > 0
-    ? `## 楽天から取得した実商品データ（記事内に必ず使用すること）\n${products.map((p, i) => `${i + 1}. 商品名: ${p.name} / 価格: ¥${p.price} / ショップ: ${p.shopName}`).join("\n")}\n\n以下のHTMLブロックを商品紹介セクションに挿入すること:\n${productHtml}`
-    : `## 商品リンク形式\n楽天: <a href="https://search.rakuten.co.jp/search/mall/${encodeURIComponent(topic.product)}/" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-rakuten">楽天で見る</a>\nAmazon: <a href="https://www.amazon.co.jp/s?k=${encodeURIComponent(topic.product)}&tag=YOUR_ASSOCIATE_ID" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-amazon">Amazonで見る</a>`;
+    ? `## 紹介する商品データ\n${products.map((p, i) => `${i + 1}. 商品名: ${p.name} / 価格: ¥${p.price}`).join("\n")}\n\n商品を紹介するセクションに <!-- PRODUCT_CARDS --> というプレースホルダーを必ず1箇所だけ挿入すること。`
+    : `## 商品リンク\n商品を紹介するセクションに <!-- PRODUCT_CARDS --> というプレースホルダーを必ず1箇所だけ挿入すること。`;
 
   const prompt = `あなたは日本の美容・コスメアフィリエイトサイト「BeautyBests」の専属ライターです。
 以下の情報をもとに、SEOに強く読者に役立つ美容記事のHTMLを生成してください。
@@ -168,6 +168,20 @@ ${productSection}
       /<link rel="canonical"[^>]*>/i,
       `<link rel="canonical" href="https://beauty-bests.com/articles/${slug}.html">`
     );
+
+  // 商品カードを記事本文の先頭付近(最初のh2の直前)に強制挿入する
+  if (productHtml) {
+    if (html.includes("<!-- PRODUCT_CARDS -->")) {
+      html = html.replace("<!-- PRODUCT_CARDS -->", productHtml);
+    } else {
+      const h2Match = html.match(/<h2[^>]*>/i);
+      if (h2Match) {
+        html = html.replace(h2Match[0], `${productHtml}\n${h2Match[0]}`);
+      } else {
+        html = html.replace("</body>", `${productHtml}\n</body>`);
+      }
+    }
+  }
 
   return { slug, html };
 }

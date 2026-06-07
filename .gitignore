@@ -1,3 +1,4 @@
 node_modules/
 scripts/auto-article.log
 scripts/progress.json
+scripts/run-daily.bat
