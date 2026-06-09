@@ -1,0 +1,45 @@
+name: 自動記事生成
+
+on:
+  schedule:
+    # 毎日 09:00 JST (= 00:00 UTC) に実行
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 手動実行ボタンも有効にする
+
+jobs:
+  generate-articles:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+        working-directory: ./
+
+      - name: 記事を自動生成
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          CI: true
+        run: node scripts/auto-article.js
+        working-directory: ./
+
+      - name: 生成した記事をコミット & プッシュ
+        run: |
+          git config user.name "BeautyBests Bot"
+          git config user.email "kentaki1114@gmail.com"
+          git add articles/ index.html scripts/progress.json
+          git diff --staged --quiet || git commit -m "🌸 自動記事生成: $(date +'%Y-%m-%d')"
+          git push
+        working-directory: ./

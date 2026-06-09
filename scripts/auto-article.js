@@ -254,6 +254,12 @@ ${productSection}
 // ===== Git操作 =====
 
 function gitPush(filenames) {
+  // GitHub Actions環境ではワークフローがcommit/pushを担当するためスキップ
+  if (process.env.CI) {
+    console.log("ℹ️ CI環境のためgit操作はワークフローに委譲");
+    return;
+  }
+
   try {
     const files = [...filenames.map((f) => `articles/${f}`), "index.html"].join(" ");
     execSync(`git -C "${ROOT_DIR}" add ${files}`, { stdio: "pipe" });
