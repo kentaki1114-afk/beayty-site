@@ -1,13 +1,8 @@
 /**
  * ランキングカード商品画像更新スクリプト
  * Rakuten Items Search API で商品画像を取得し index.html に反映する
- *
- * 環境変数:
- *   RAKUTEN_APP_ID=xxxxxx (必須)
- *   RAKUTEN_AFFILIATE_ID=xxxxxx (任意)
  */
 
-import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -27,7 +22,7 @@ function httpsGet(url) {
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
         try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 200)}`)); }
+        catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 300)}`)); }
       });
     }).on("error", reject);
   });
@@ -35,7 +30,7 @@ function httpsGet(url) {
 
 async function fetchImageUrl(keyword) {
   const appId = process.env.RAKUTEN_APP_ID;
-  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
+  if (!appId) return null;
 
   const params = new URLSearchParams({
     applicationId: appId,
@@ -44,30 +39,39 @@ async function fetchImageUrl(keyword) {
     imageFlag: "1",
     formatVersion: "2",
   });
+  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
   if (affiliateId) params.set("affiliateId", affiliateId);
 
   const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params.toString()}`;
 
   try {
     const data = await httpsGet(url);
-    if (!data.Items || data.Items.length === 0) return null;
+    if (!data.Items || data.Items.length === 0) {
+      console.log(`    → 検索結果なし`);
+      return null;
+    }
     const item = data.Items[0];
-    const imgUrl = item.mediumImageUrls?.[0]?.imageUrl || item.mediumImageUrls?.[0] || null;
+    // formatVersion:2 では mediumImageUrls は文字列配列
+    const imgs = item.mediumImageUrls;
+    const imgUrl = Array.isArray(imgs)
+      ? (typeof imgs[0] === "object" ? imgs[0].imageUrl : imgs[0])
+      : null;
+    console.log(`    → ${imgUrl ? "画像取得OK" : "画像URLなし"}`);
     return imgUrl || null;
   } catch (e) {
-    console.log(`  ⚠️ API取得失敗 (${keyword}): ${e.message}`);
+    console.log(`    → API失敗: ${e.message}`);
     return null;
   }
 }
 
-function extractProductNames(html) {
-  const names = [];
-  const pattern = /<div class="product-img-placeholder">[^<]*<\/div>[\s\S]*?<div class="product-name">([^<]+)<\/div>/g;
-  let match;
-  while ((match = pattern.exec(html)) !== null) {
-    names.push(match[1].trim());
-  }
-  return names;
+// HTMLエンティティをデコード（&amp; → & など）
+function decodeHtmlEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
 }
 
 async function main() {
@@ -79,52 +83,61 @@ async function main() {
   }
 
   let html = fs.readFileSync(INDEX_FILE, "utf-8");
-  const productNames = extractProductNames(html);
-  console.log(`📦 対象商品: ${productNames.length} 件`);
+
+  // ranking-card ブロックを個別に処理
+  // placeholder が残っているカードのみ対象
+  const cardRegex = /(<div class="ranking-card"[^>]*>)([\s\S]*?)(?=<div class="ranking-card"|<\/div>\s*<\/section>)/g;
 
   let updatedCount = 0;
+  let totalCount = 0;
+  const replacements = []; // { search, replace } のリスト
 
-  for (const name of productNames) {
-    console.log(`  検索中: ${name}`);
-    await new Promise((r) => setTimeout(r, 800)); // API制限対策
+  let match;
+  while ((match = cardRegex.exec(html)) !== null) {
+    const cardHtml = match[0];
 
-    const imgUrl = await fetchImageUrl(name);
+    // placeholder が既に置き換えられているカードはスキップ
+    if (!cardHtml.includes('product-img-placeholder')) continue;
 
-    if (!imgUrl) {
-      console.log(`  ⏭️ 画像なし: ${name}`);
-      continue;
-    }
+    // product-name を抽出（HTMLエンティティあり）
+    const nameMatch = cardHtml.match(/<div class="product-name">([^<]+)<\/div>/);
+    if (!nameMatch) continue;
 
-    // product-img-placeholderをimgタグに置き換え（対象商品名の直前のもの）
-    // 商品名でマッチするブロックを特定して置換
-    const safeEscape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/&amp;/g, "&amp;").replace(/&/g, "(?:&amp;|&)");
+    const nameInHtml = nameMatch[1].trim(); // HTML内の文字列（&amp;等を含む）
+    const nameForApi = decodeHtmlEntities(nameInHtml); // API検索用にデコード
 
-    const blockPattern = new RegExp(
-      `(<div class="product-img-wrap">)<div class="product-img-placeholder">[^<]*</div>(</div>[\\s\\S]*?<div class="product-name">${safeEscape(name)}</div>)`,
-      "m"
+    totalCount++;
+    console.log(`  [${totalCount}] 検索: ${nameForApi}`);
+
+    await new Promise((r) => setTimeout(r, 800));
+    const imgUrl = await fetchImageUrl(nameForApi);
+
+    if (!imgUrl) continue;
+
+    // このカード内の placeholder だけを img に置換
+    // placeholder の直前にある product-img-wrap を特定
+    const oldBlock = `<div class="product-img-placeholder">[^<]*</div>`;
+    const newImg = `<img src="${imgUrl}" alt="${nameInHtml}" loading="lazy" style="width:100%;max-width:200px;height:auto;object-fit:contain;border-radius:8px;">`;
+
+    const updatedCard = cardHtml.replace(
+      new RegExp(oldBlock),
+      newImg
     );
 
-    const newImg = `<img src="${imgUrl}" alt="${name}" loading="lazy" width="200" height="200" style="object-fit:contain;border-radius:8px;width:100%;height:auto;">`;
-
-    const updated = html.replace(blockPattern, `$1${newImg}$2`);
-
-    if (updated !== html) {
-      html = updated;
+    if (updatedCard !== cardHtml) {
+      replacements.push({ from: cardHtml, to: updatedCard, name: nameForApi });
       updatedCount++;
-      console.log(`  ✅ 画像更新: ${name}`);
-    } else {
-      console.log(`  ⚠️ パターン不一致: ${name}`);
     }
+  }
+
+  // まとめて置換（順序の依存を避けるため後から一括）
+  for (const { from, to, name } of replacements) {
+    html = html.replace(from, to);
+    console.log(`  ✅ 画像更新: ${name}`);
   }
 
   fs.writeFileSync(INDEX_FILE, html, "utf-8");
-  console.log(`\n✨ 完了: ${updatedCount}/${productNames.length} 件更新`);
-
-  // CI環境ではワークフローがcommit/pushを担当
-  if (process.env.CI) {
-    console.log("ℹ️ CI環境のためgit操作はワークフローに委譲");
-    return;
-  }
+  console.log(`\n✨ 完了: ${updatedCount}/${totalCount} 件更新`);
 }
 
 main().catch((err) => {
