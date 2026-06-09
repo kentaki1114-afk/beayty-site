@@ -336,6 +336,8 @@ img { max-width: 100%; display: block; }
 .btn-rakuten:hover { background: #a00000; color: #fff; transform: translateY(-1px); }
 .btn-amazon { background: #ff9900; color: #111; }
 .btn-amazon:hover { background: #e68900; color: #111; transform: translateY(-1px); }
+.btn-yahoo { background: #ff0033; color: #fff; }
+.btn-yahoo:hover { background: #cc0029; color: #fff; transform: translateY(-1px); }
 .btn-detail { background: var(--bg-gray); color: var(--text-light); font-size: 11px; padding: 5px 12px; border-radius: 100px; }
 .btn-detail:hover { background: var(--primary-light); color: var(--primary); }
 
