@@ -189,38 +189,65 @@ async function generateArticle(topic) {
     ? `## 紹介する商品データ\n${products.map((p, i) => `${i + 1}. 商品名: ${p.name} / 価格: ¥${p.price}`).join("\n")}\n\n商品を紹介するセクションに <!-- PRODUCT_CARDS --> というプレースホルダーを必ず1箇所だけ挿入すること。`
     : `## 商品リンク\n商品を紹介するセクションに <!-- PRODUCT_CARDS --> というプレースホルダーを必ず1箇所だけ挿入すること。`;
 
-  const prompt = `あなたは日本の美容・コスメアフィリエイトサイト「BeautyBests」の専属ライターです。
-以下の情報をもとに、SEOに強く読者に役立つ美容記事のHTMLを生成してください。
+  const today = new Date().toISOString().split("T")[0];
+
+  const prompt = `あなたは日本の美容・コスメアフィリエイトサイト「BeautyBests」のSEO専門ライターです。
+Googleで検索上位を取るための高品質な記事HTMLを生成してください。
 
 ## 記事情報
 - タイトル: ${topic.title}
 - カテゴリ: ${topic.category}
-- 対象キーワード: ${topic.keyword}
+- メインキーワード: ${topic.keyword}
 - 紹介する商品: ${topic.product}
+- 公開日: ${today}
 
-## 執筆ルール
-1. 文字数: 2000〜3000文字
-2. 参考にするサイト: @cosme、LIPS、美的.com、MAQUIA Online、VOCE の情報を参考にする
-3. 効果・効能の断定表現は使わない（薬機法対応）
-4. 「治る」「治療する」等の医療的表現は使わない
-5. 口コミや評価は「〜という声が多い」「〜という口コミがある」等の表現にする
-6. 見出し（h2・h3）を適切に使い、読みやすく構成する
-7. 目次、ポイントリスト、まとめを必ず含める
+## SEO必須要件（すべて必ず実装すること）
 
-## HTMLテンプレート仕様
-- 外部CSSは "../css/style.css" を使用
-- ヘッダーのロゴは "Beauty<span>Bests</span>✦"
-- フッターに必ずアフィリエイト免責表示を入れる
+### 1. headタグ内
+- <title>: メインキーワードを含む60文字以内
+- <meta name="description">: メインキーワードを含む120文字以内で読者の行動を促す文章
+- <meta name="keywords">: 関連キーワード5〜8個
+- <link rel="canonical">: https://beauty-bests.com/articles/SLUG.html
+- OGPタグ（og:title, og:description, og:type="article"）
+- JSON-LD構造化データ（Article型）を必ず含める：
+  \`\`\`json
+  {"@context":"https://schema.org","@type":"Article","headline":"タイトル","datePublished":"${today}","dateModified":"${today}","author":{"@type":"Organization","name":"BeautyBests"},"publisher":{"@type":"Organization","name":"BeautyBests","url":"https://beauty-bests.com"}}
+  \`\`\`
+
+### 2. 記事構成（この順番で必ず作成）
+1. **リード文**（200字）: 読者の悩みに共感し、この記事で解決できることを明示
+2. **この記事でわかること**（箇条書き3〜5点）
+3. **目次**（h2見出しをすべてリスト化）
+4. **本文**（h2×4〜6個、各h2の下にh3×2〜3個）
+5. **比較テーブル**（商品を表形式で比較。列：商品名・価格・特徴・おすすめ肌質）
+6. **商品紹介セクション** ← ここに <!-- PRODUCT_CARDS --> を挿入
+7. **よくある質問（FAQ）**（Q&A形式で4〜6問）
+8. **まとめ**（結論＋読者へのアクション）
+9. **関連記事リンク**（サイト内の関連カテゴリへのリンクを2〜3個）
+
+### 3. 文章ルール
+- 文字数: 3000〜4000文字（本文のみ）
+- @cosme・LIPS・美的.com・MAQUIA Online・VOCE の情報を参考にした具体的な口コミを引用
+- 「〜という声が多い」「〜という口コミが見られる」等の表現を使う（断定しない）
+- 薬機法対応：「治る」「治療する」「効く」等の断定表現は使わない
+- 読者が「この記事を全部読んで良かった」と感じる情報量にする
+
+### 4. HTMLクラス・構造
+- 外部CSS: "../css/style.css"
+- ロゴ: Beauty<span>Bests</span>✦
+- パンくずリスト: HOME > ${topic.category} > 記事タイトル
+- FAQはschema.org FAQPageのJSON-LDも追加する
+- フッターにアフィリエイト免責表示を必ず入れる
 
 ${productSection}
 
 ## 出力形式
-完全なHTMLファイルのみ出力してください。説明文やコードブロックの囲み（\`\`\`）は不要です。
-<!DOCTYPE html> から始まり </html> で終わるHTMLのみ出力してください。`;
+<!DOCTYPE html>から始まり</html>で終わる完全なHTMLのみ出力してください。
+コードブロック記号（\`\`\`）や説明文は不要です。`;
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5",
-    max_tokens: 8192,
+    model: "claude-sonnet-4-5",
+    max_tokens: 12000,
     messages: [{ role: "user", content: prompt }],
   });
 
