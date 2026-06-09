@@ -566,9 +566,27 @@
         <span class="badge">新着</span>
       </h2>
 
-      <div class="article-grid">
+      <!-- カテゴリフィルター -->
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="all">すべて</button>
+        <button class="filter-btn" data-filter="スキンケア">スキンケア</button>
+        <button class="filter-btn" data-filter="韓国コスメ">韓国コスメ</button>
+        <button class="filter-btn" data-filter="メイクアップ">メイクアップ</button>
+        <button class="filter-btn" data-filter="ヘアケア">ヘアケア</button>
+        <button class="filter-btn" data-filter="日焼け止め">日焼け止め</button>
+        <button class="filter-btn" data-filter="ボディケア">ボディケア</button>
+        <button class="filter-btn" data-filter="ニキビケア">ニキビケア</button>
+      </div>
 
-        <a href="articles/article-20260609-8auv.html" class="article-card">
+      <!-- 検索バー -->
+      <div class="article-search-bar">
+        <input type="text" id="article-search" placeholder="記事を検索..." autocomplete="off">
+        <span class="search-result-count" id="search-count"></span>
+      </div>
+
+      <div class="article-grid" id="article-grid">
+
+        <a href="articles/article-20260609-8auv.html" class="article-card" data-category="韓国コスメ">
           <div class="article-thumb">🌸</div>
           <div class="article-body">
             <div class="article-tags">
@@ -583,7 +601,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260609-4wh4.html" class="article-card">
+        <a href="articles/article-20260609-4wh4.html" class="article-card" data-category="メイクアップ">
           <div class="article-thumb">💄</div>
           <div class="article-body">
             <div class="article-tags">
@@ -598,7 +616,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260609-wkau.html" class="article-card">
+        <a href="articles/article-20260609-wkau.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -613,7 +631,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260609-ikv4.html" class="article-card">
+        <a href="articles/article-20260609-ikv4.html" class="article-card" data-category="メイクアップ">
           <div class="article-thumb">💄</div>
           <div class="article-body">
             <div class="article-tags">
@@ -628,7 +646,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260609-3ldk.html" class="article-card">
+        <a href="articles/article-20260609-3ldk.html" class="article-card" data-category="韓国コスメ">
           <div class="article-thumb">🌸</div>
           <div class="article-body">
             <div class="article-tags">
@@ -643,7 +661,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260604-0ja0.html" class="article-card">
+        <a href="articles/article-20260604-0ja0.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -657,7 +675,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260604-e8ki.html" class="article-card">
+        <a href="articles/article-20260604-e8ki.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -671,7 +689,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260604-m8bz.html" class="article-card">
+        <a href="articles/article-20260604-m8bz.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -685,7 +703,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260604-xk42.html" class="article-card">
+        <a href="articles/article-20260604-xk42.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -699,7 +717,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260604-xlem.html" class="article-card">
+        <a href="articles/article-20260604-xlem.html" class="article-card" data-category="メイクアップ">
           <div class="article-thumb">💄</div>
           <div class="article-body">
             <div class="article-tags">
@@ -713,7 +731,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260606-6kqg.html" class="article-card">
+        <a href="articles/article-20260606-6kqg.html" class="article-card" data-category="ヘアケア">
           <div class="article-thumb">💇</div>
           <div class="article-body">
             <div class="article-tags">
@@ -727,7 +745,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260606-bdof.html" class="article-card">
+        <a href="articles/article-20260606-bdof.html" class="article-card" data-category="メイクアップ">
           <div class="article-thumb">💄</div>
           <div class="article-body">
             <div class="article-tags">
@@ -741,7 +759,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260606-dsty.html" class="article-card">
+        <a href="articles/article-20260606-dsty.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -755,7 +773,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260606-jflu.html" class="article-card">
+        <a href="articles/article-20260606-jflu.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -769,7 +787,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260606-v3zz.html" class="article-card">
+        <a href="articles/article-20260606-v3zz.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -783,7 +801,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-ckc2.html" class="article-card">
+        <a href="articles/article-20260607-ckc2.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -797,7 +815,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-eqpa.html" class="article-card">
+        <a href="articles/article-20260607-eqpa.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -811,7 +829,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-g59q.html" class="article-card">
+        <a href="articles/article-20260607-g59q.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -825,7 +843,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-gax3.html" class="article-card">
+        <a href="articles/article-20260607-gax3.html" class="article-card" data-category="メイクアップ">
           <div class="article-thumb">💄</div>
           <div class="article-body">
             <div class="article-tags">
@@ -839,7 +857,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-k0kg.html" class="article-card">
+        <a href="articles/article-20260607-k0kg.html" class="article-card" data-category="韓国コスメ">
           <div class="article-thumb">🌸</div>
           <div class="article-body">
             <div class="article-tags">
@@ -853,7 +871,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-lc3d.html" class="article-card">
+        <a href="articles/article-20260607-lc3d.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -867,7 +885,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-m2fa.html" class="article-card">
+        <a href="articles/article-20260607-m2fa.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -881,7 +899,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-uajr.html" class="article-card">
+        <a href="articles/article-20260607-uajr.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -895,7 +913,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-yejz.html" class="article-card">
+        <a href="articles/article-20260607-yejz.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -909,7 +927,7 @@
           </div>
         </a>
 
-        <a href="articles/article-20260607-yjcv.html" class="article-card">
+        <a href="articles/article-20260607-yjcv.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -923,7 +941,7 @@
           </div>
         </a>
 
-        <a href="articles/medicube-review.html" class="article-card">
+        <a href="articles/medicube-review.html" class="article-card" data-category="韓国コスメ">
           <div class="article-thumb">🧬</div>
           <div class="article-body">
             <div class="article-tags">
@@ -938,7 +956,7 @@
           </div>
         </a>
 
-        <a href="articles/cosrx-acne-patch.html" class="article-card">
+        <a href="articles/cosrx-acne-patch.html" class="article-card" data-category="ニキビケア">
           <div class="article-thumb">🩹</div>
           <div class="article-body">
             <div class="article-tags">
@@ -953,7 +971,7 @@
           </div>
         </a>
 
-        <a href="articles/hince-tint-lip.html" class="article-card">
+        <a href="articles/hince-tint-lip.html" class="article-card" data-category="リップ">
           <div class="article-thumb">💋</div>
           <div class="article-body">
             <div class="article-tags">
@@ -968,7 +986,7 @@
           </div>
         </a>
 
-        <a href="articles/mediheal-square-serum.html" class="article-card">
+        <a href="articles/mediheal-square-serum.html" class="article-card" data-category="美容液">
           <div class="article-thumb">🔬</div>
           <div class="article-body">
             <div class="article-tags">
@@ -983,7 +1001,7 @@
           </div>
         </a>
 
-        <a href="articles/sunscreen-ranking-2026.html" class="article-card">
+        <a href="articles/sunscreen-ranking-2026.html" class="article-card" data-category="日焼け止め">
           <div class="article-thumb">☀️</div>
           <div class="article-body">
             <div class="article-tags">
@@ -998,7 +1016,7 @@
           </div>
         </a>
 
-        <a href="articles/beginner-skincare.html" class="article-card">
+        <a href="articles/beginner-skincare.html" class="article-card" data-category="スキンケア">
           <div class="article-thumb">🧴</div>
           <div class="article-body">
             <div class="article-tags">
@@ -1013,7 +1031,7 @@
           </div>
         </a>
 
-        <a href="articles/sunscreen-ranking.html" class="article-card">
+        <a href="articles/sunscreen-ranking.html" class="article-card" data-category="日焼け止め">
           <div class="article-thumb">☀️</div>
           <div class="article-body">
             <div class="article-tags">
@@ -1028,7 +1046,7 @@
           </div>
         </a>
 
-        <a href="articles/korean-cosme.html" class="article-card">
+        <a href="articles/korean-cosme.html" class="article-card" data-category="韓国コスメ">
           <div class="article-thumb">🇰🇷</div>
           <div class="article-body">
             <div class="article-tags">
@@ -1043,7 +1061,7 @@
           </div>
         </a>
 
-        <a href="articles/hair-oil-ranking.html" class="article-card">
+        <a href="articles/hair-oil-ranking.html" class="article-card" data-category="ヘアケア">
           <div class="article-thumb">💆</div>
           <div class="article-body">
             <div class="article-tags">
@@ -1059,6 +1077,10 @@
         </a>
 
       </div>
+
+      <!-- ページネーション -->
+      <div class="pagination" id="pagination"></div>
+
     </section>
 
   </main>
@@ -1211,5 +1233,6 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script src="js/article-filter.js"></script>
 </body>
 </html>

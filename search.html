@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記事検索 | BeautyBests</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .search-page { max-width: 800px; margin: 0 auto; padding: 32px 16px; }
+    .search-form-wrap { display: flex; gap: 8px; margin-bottom: 24px; }
+    .search-form-wrap input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-form-wrap input:focus { border-color: var(--primary); }
+    .search-form-wrap button {
+      padding: 12px 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .search-result-header { margin-bottom: 16px; color: var(--text-muted); font-size: 14px; }
+    .search-result-header strong { color: var(--primary); font-size: 18px; }
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .result-card:hover { border-color: var(--primary); box-shadow: 0 2px 12px rgba(255,105,180,.15); }
+    .result-title { font-size: 16px; font-weight: 700; }
+    .result-title mark { background: #fff0f8; color: var(--primary); border-radius: 3px; }
+    .result-cat { font-size: 12px; color: #fff; background: var(--primary); border-radius: 20px; padding: 2px 10px; display: inline-block; width: fit-content; }
+    .no-results { text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 15px; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Beauty<span>Bests</span>✦</a>
+    <form class="header-search" action="search.html" method="get" role="search">
+      <input type="search" name="q" placeholder="コスメ・スキンケアを検索" aria-label="サイト内検索">
+      <button type="submit" aria-label="検索">🔍</button>
+    </form>
+    <nav class="header-nav">
+      <ul>
+        <li><a href="index.html#ranking">ランキング</a></li>
+        <li><a href="index.html#articles">記事一覧</a></li>
+        <li><a href="ranking.html">ランキング</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="search-page">
+  <h1 class="section-title" style="margin-bottom:20px;">記事検索</h1>
+
+  <form class="search-form-wrap" action="search.html" method="get">
+    <input type="search" name="q" id="search-input" placeholder="キーワードを入力...">
+    <button type="submit">🔍 検索</button>
+  </form>
+
+  <div id="results-container">
+    <p style="color:var(--text-muted);font-size:14px;">キーワードを入力して検索してください。</p>
+  </div>
+</main>
+
+<footer style="padding:24px;text-align:center;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border);">
+  <a href="index.html">トップへ戻る</a> &nbsp;|&nbsp;
+  <a href="privacy.html">プライバシーポリシー</a> &nbsp;|&nbsp;
+  <a href="disclaimer.html">免責事項</a>
+</footer>
+
+<script>
+// 記事インデックス — auto-article.js が生成した記事一覧をここに動的ロード
+// index.htmlのarticle-cardから情報を取得してJSONとして持つ
+// （静的サイトのため、index.htmlをfetchしてパース）
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const query = params.get('q')?.trim() || '';
+
+  const input = document.getElementById('search-input');
+  if (input && query) input.value = query;
+
+  if (!query) return;
+
+  const container = document.getElementById('results-container');
+  container.innerHTML = '<p style="color:var(--text-muted);">検索中...</p>';
+
+  try {
+    // index.htmlをfetchしてarticle-cardを抽出
+    const res = await fetch('index.html');
+    const text = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    const cards = Array.from(doc.querySelectorAll('.article-card'));
+
+    const lower = query.toLowerCase();
+    const results = cards.filter((card) => {
+      const title = card.querySelector('.article-title')?.textContent || '';
+      const tags = card.querySelector('.article-tags')?.textContent || '';
+      return title.toLowerCase().includes(lower) || tags.toLowerCase().includes(lower);
+    });
+
+    if (results.length === 0) {
+      container.innerHTML = `<div class="no-results">「${escHtml(query)}」に一致する記事が見つかりませんでした。<br>別のキーワードで試してみてください。</div>`;
+      return;
+    }
+
+    const html = [
+      `<p class="search-result-header">「<strong>${escHtml(query)}</strong>」の検索結果: ${results.length} 件</p>`,
+      ...results.map((card) => {
+        const href = card.getAttribute('href');
+        const title = card.querySelector('.article-title')?.textContent || '';
+        const cat = card.querySelector('.tag.tag-primary')?.textContent || '';
+        const highlighted = title.replace(
+          new RegExp(escRegex(query), 'gi'),
+          (m) => `<mark>${escHtml(m)}</mark>`
+        );
+        return `<a href="${escHtml(href)}" class="result-card">
+          <span class="result-cat">${escHtml(cat)}</span>
+          <span class="result-title">${highlighted}</span>
+        </a>`;
+      }),
+    ].join('');
+
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<p style="color:var(--text-muted);">検索中にエラーが発生しました。</p>';
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function escRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+})();
+</script>
+
+</body>
+</html>
