@@ -177,6 +177,27 @@ function updateIndexHtml(articles) {
   console.log(`  📄 index.html に ${articles.length} 件追加`);
 }
 
+// ===== 重複チェック =====
+
+function getExistingTitles() {
+  if (!fs.existsSync(ARTICLES_DIR)) return new Set();
+  const titles = new Set();
+  const files = fs.readdirSync(ARTICLES_DIR).filter((f) => f.endsWith(".html"));
+  for (const file of files) {
+    try {
+      const content = fs.readFileSync(path.join(ARTICLES_DIR, file), "utf-8");
+      const match = content.match(/<title>([^<]+)<\/title>/i);
+      if (match) {
+        // "タイトル | BeautyBests" → "タイトル" に正規化
+        titles.add(match[1].replace(/\s*\|\s*BeautyBests\s*$/i, "").trim());
+      }
+    } catch {
+      // 読み取れないファイルはスキップ
+    }
+  }
+  return titles;
+}
+
 // ===== 記事生成 =====
 
 async function generateArticle(topic) {
@@ -329,13 +350,22 @@ async function main() {
   const topics = loadTopics();
   const progress = loadProgress();
   const startIndex = progress.lastIndex % topics.length;
+  const existingTitles = getExistingTitles();
+  console.log(`📚 既存記事: ${existingTitles.size} 件`);
 
   const todayTopics = [];
-  for (let i = 0; i < ARTICLES_PER_DAY; i++) {
-    todayTopics.push(topics[(startIndex + i) % topics.length]);
+  let scanIndex = startIndex;
+  while (todayTopics.length < ARTICLES_PER_DAY && scanIndex < startIndex + topics.length) {
+    const topic = topics[scanIndex % topics.length];
+    if (existingTitles.has(topic.title)) {
+      console.log(`  ⏭️ スキップ (重複): ${topic.title}`);
+    } else {
+      todayTopics.push(topic);
+    }
+    scanIndex++;
   }
 
-  console.log(`📝 本日のトピック (${ARTICLES_PER_DAY}本):`);
+  console.log(`📝 本日のトピック (${todayTopics.length}本):`);
   todayTopics.forEach((t, i) => console.log(`  ${i + 1}. ${t.title}`));
   console.log("─".repeat(40));
 
@@ -361,7 +391,7 @@ async function main() {
     }
   }
 
-  saveProgress({ lastIndex: startIndex + ARTICLES_PER_DAY, lastRun: new Date().toISOString() });
+  saveProgress({ lastIndex: scanIndex, lastRun: new Date().toISOString() });
 
   console.log("─".repeat(40));
   console.log(`✨ 完了: ${successCount}/${ARTICLES_PER_DAY}本生成`);
