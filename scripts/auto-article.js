@@ -54,9 +54,9 @@ function formatDate() {
   return `${y}.${m}.${d}`;
 }
 
-function httpsGet(url) {
+function httpsGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    https.get(url, { headers }, (res) => {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
@@ -71,12 +71,24 @@ function httpsGet(url) {
 
 async function fetchRakutenProducts(keyword, count = 3) {
   const appId = process.env.RAKUTEN_APP_ID;
-  if (!appId) return [];
+  const accessKey = process.env.RAKUTEN_ACCESS_KEY;
+  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
+  if (!appId || !accessKey) return [];
 
   try {
     const encodedKeyword = encodeURIComponent(keyword);
-    const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?applicationId=${appId}&keyword=${encodedKeyword}&hits=${count}&imageFlag=1&formatVersion=2`;
-    const data = await httpsGet(url);
+    const params = new URLSearchParams({
+      applicationId: appId,
+      accessKey: accessKey,
+      keyword: encodedKeyword,
+      hits: String(count),
+      imageFlag: "1",
+      formatVersion: "2",
+    });
+    if (affiliateId) params.set("affiliateId", affiliateId);
+
+    const url = `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601?${params.toString()}`;
+    const data = await httpsGet(url, { Referer: "https://beauty-bests.com" });
 
     if (!data.Items || data.Items.length === 0) return [];
 
@@ -103,7 +115,7 @@ function buildProductHtml(products, keyword) {
           <p class="product-name">${p.name}</p>
           <p class="product-price">楽天価格: ¥${p.price}</p>
           <a href="${p.itemUrl}" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-rakuten">楽天で見る</a>
-          <a href="https://www.amazon.co.jp/s?k=${encodeURIComponent(keyword)}&tag=YOUR_ASSOCIATE_ID" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <a href="https://www.amazon.co.jp/s?k=${encodeURIComponent(keyword)}&tag=kentaki0d-22" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-amazon">Amazonで見る</a>
         </div>
       </div>`).join("\n");
 
@@ -224,10 +236,10 @@ async function main() {
     process.exit(1);
   }
 
-  if (process.env.RAKUTEN_APP_ID) {
+  if (process.env.RAKUTEN_APP_ID && process.env.RAKUTEN_ACCESS_KEY) {
     console.log("🛍️ 楽天商品APIを使用します");
   } else {
-    console.log("⚠️ RAKUTEN_APP_ID未設定: 商品画像なしで生成します");
+    console.log("⚠️ RAKUTEN_APP_ID / RAKUTEN_ACCESS_KEY未設定: 商品画像なしで生成します");
   }
 
   const topics = loadTopics();

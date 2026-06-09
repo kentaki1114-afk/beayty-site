@@ -51,7 +51,7 @@ beauty-site/
 | ASP | 状態 | メモ |
 |---|---|---|
 | 楽天アフィリエイト | 登録済み | リンク一部設置済み |
-| Amazonアソシエイト | 申請中 | `YOUR_ASSOCIATE_ID` を差し替え必要 |
+| Amazonアソシエイト | 申請中 | `kentaki0d-22` を差し替え必要 |
 | もしもアフィリエイト | 未登録 |  |
 
 ### 楽天リンク設置済み商品
@@ -61,8 +61,8 @@ beauty-site/
 - CEZANNE BBクリーム
 - アネッサ パーフェクトUV
 
-### Amazonリンク未設置（`YOUR_ASSOCIATE_ID` を要差し替え）
-全ファイルの `tag=YOUR_ASSOCIATE_ID` を実際のアソシエイトIDに置換する。
+### Amazonリンク未設置（`kentaki0d-22` を要差し替え）
+全ファイルの `tag=kentaki0d-22` を実際のアソシエイトIDに置換する。
 
 ---
 
