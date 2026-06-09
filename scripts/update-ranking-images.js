@@ -28,28 +28,42 @@ function httpsGet(url) {
   });
 }
 
-async function fetchImageUrl(keyword) {
+async function fetchImageUrl(keyword, isFirst = false) {
   const appId = process.env.RAKUTEN_APP_ID;
   const params = new URLSearchParams({
     applicationId: appId,
     keyword,
-    hits: "1",
+    hits: "3",
     imageFlag: "1",
     formatVersion: "2",
   });
   if (process.env.RAKUTEN_AFFILIATE_ID) params.set("affiliateId", process.env.RAKUTEN_AFFILIATE_ID);
 
+  const apiUrl = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params}`;
+
   try {
-    const data = await httpsGet(
-      `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params}`
-    );
+    const data = await httpsGet(apiUrl);
+
+    if (isFirst) {
+      console.log("    [DEBUG] APIレスポンスキー:", Object.keys(data).join(", "));
+      if (data.error) console.log("    [DEBUG] APIエラー:", data.error, data.error_description || "");
+      if (data.Items?.length) {
+        const item = data.Items[0];
+        console.log("    [DEBUG] itemキー:", Object.keys(item).join(", "));
+        console.log("    [DEBUG] mediumImageUrls:", JSON.stringify(item.mediumImageUrls));
+      }
+    }
+
+    if (data.error) { console.log(`    → APIエラー: ${data.error}`); return null; }
     if (!data.Items?.length) { console.log("    → 結果なし"); return null; }
+
     const imgs = data.Items[0].mediumImageUrls;
     const url = typeof imgs?.[0] === "object" ? imgs[0].imageUrl : imgs?.[0];
-    console.log(`    → ${url ? "OK: " + url.slice(0, 60) + "…" : "画像URLなし"}`);
+    console.log(`    → ${url ? "OK: " + String(url).slice(0, 70) : "画像URLなし"}`);
     return url || null;
   } catch (e) {
     console.log(`    → API失敗: ${e.message}`);
+    if (isFirst) console.log("    [DEBUG] URL:", apiUrl.replace(appId, "***"));
     return null;
   }
 }
@@ -91,6 +105,7 @@ async function main() {
   // 画像取得して置換情報を収集（後ろから置換してindexがずれないようにする）
   const replacements = [];
 
+  let callCount = 0;
   for (const { ph, name } of pairs) {
     if (!name) { console.log("  ⚠️ 対応する商品名なし"); continue; }
 
@@ -98,7 +113,8 @@ async function main() {
     console.log(`  検索: ${decodedName}`);
     await new Promise((r) => setTimeout(r, 800));
 
-    const imgUrl = await fetchImageUrl(decodedName);
+    const imgUrl = await fetchImageUrl(decodedName, callCount === 0);
+    callCount++;
     if (!imgUrl) continue;
 
     replacements.push({
