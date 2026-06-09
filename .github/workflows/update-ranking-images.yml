@@ -1,0 +1,37 @@
+name: ランキング商品画像更新
+
+on:
+  workflow_dispatch:  # 手動実行のみ
+
+permissions:
+  contents: write
+
+jobs:
+  update-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm ci
+
+      - name: ランキング画像を更新
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          CI: true
+        run: node scripts/update-ranking-images.js
+
+      - name: コミット & プッシュ
+        run: |
+          git config user.name "BeautyBests Bot"
+          git config user.email "kentaki1114@gmail.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "🖼️ ランキングカード商品画像を楽天APIで更新"
+          git push
