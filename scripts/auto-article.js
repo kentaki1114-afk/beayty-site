@@ -5,7 +5,8 @@
  * 環境変数:
  *   ANTHROPIC_API_KEY=sk-ant-xxxxx (必須)
  *   GITHUB_TOKEN=ghp_xxxxx (必須)
- *   RAKUTEN_APP_ID=xxxxxx (任意: 楽天商品画像を取得)
+ *   RAKUTEN_APP_ID=xxxxxx (任意: 楽天商品情報を取得)
+ *   RAKUTEN_AFFILIATE_ID=xxxxxx (任意: 楽天アフィリエイトID)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -20,10 +21,24 @@ const ROOT_DIR = path.join(__dirname, "..");
 const ARTICLES_DIR = path.join(ROOT_DIR, "articles");
 const TOPICS_FILE = path.join(__dirname, "topics.json");
 const PROGRESS_FILE = path.join(__dirname, "progress.json");
+const INDEX_FILE = path.join(ROOT_DIR, "index.html");
 
 const ARTICLES_PER_DAY = 5;
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// カテゴリ別絵文字
+const CATEGORY_EMOJI = {
+  "韓国コスメ": "🌸",
+  "スキンケア": "🧴",
+  "メイクアップ": "💄",
+  "ヘアケア": "💇",
+  "ボディケア": "🛁",
+  "日焼け止め": "☀️",
+  "ニキビケア": "🩹",
+  "保湿": "💧",
+  "default": "✨",
+};
 
 // ===== ユーティリティ =====
 
@@ -57,11 +72,15 @@ function formatDate() {
 function httpsGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (res) => {
+      // リダイレクト対応
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        return httpsGet(res.headers.location, headers).then(resolve).catch(reject);
+      }
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
         try { resolve(JSON.parse(data)); }
-        catch (e) { reject(e); }
+        catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 200)}`)); }
       });
     }).on("error", reject);
   });
@@ -71,32 +90,29 @@ function httpsGet(url, headers = {}) {
 
 async function fetchRakutenProducts(keyword, count = 3) {
   const appId = process.env.RAKUTEN_APP_ID;
-  const accessKey = process.env.RAKUTEN_ACCESS_KEY;
-  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
-  if (!appId || !accessKey) return [];
+  if (!appId) return [];
 
   try {
-    const encodedKeyword = encodeURIComponent(keyword);
     const params = new URLSearchParams({
       applicationId: appId,
-      accessKey: accessKey,
-      keyword: encodedKeyword,
+      keyword: keyword,
       hits: String(count),
       imageFlag: "1",
       formatVersion: "2",
     });
+    const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
     if (affiliateId) params.set("affiliateId", affiliateId);
 
-    const url = `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601?${params.toString()}`;
-    const data = await httpsGet(url, { Referer: "https://beauty-bests.com" });
+    const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params.toString()}`;
+    const data = await httpsGet(url);
 
     if (!data.Items || data.Items.length === 0) return [];
 
     return data.Items.map((item) => ({
       name: item.itemName.slice(0, 50),
       price: item.itemPrice.toLocaleString(),
-      imageUrl: item.mediumImageUrls[0] || "",
-      itemUrl: item.itemUrl,
+      imageUrl: item.mediumImageUrls?.[0]?.imageUrl || item.mediumImageUrls?.[0] || "",
+      itemUrl: affiliateId ? item.affiliateUrl : item.itemUrl,
       shopName: item.shopName,
     }));
   } catch (e) {
@@ -110,16 +126,55 @@ function buildProductHtml(products, keyword) {
 
   const cards = products.map((p) => `
       <div class="product-card">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" loading="lazy" style="width:128px;height:128px;object-fit:contain;">` : ""}
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" loading="lazy" style="width:128px;height:128px;object-fit:contain;border-radius:8px;">` : ""}
         <div class="product-info">
           <p class="product-name">${p.name}</p>
           <p class="product-price">楽天価格: ¥${p.price}</p>
-          <a href="${p.itemUrl}" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-rakuten">楽天で見る</a>
-          <a href="https://www.amazon.co.jp/s?k=${encodeURIComponent(keyword)}&tag=kentaki0d-22" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+          <div class="product-actions">
+            <a href="${p.itemUrl}" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-rakuten">楽天で見る</a>
+            <a href="https://www.amazon.co.jp/s?k=${encodeURIComponent(keyword)}&tag=kentaki0d-22" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-amazon">Amazonで見る</a>
+            <a href="https://af.moshimo.com/af/c/click?a_id=1194904&p_id=1225&pc_id=2274&pl_id=28877&url=${encodeURIComponent('https://shopping.yahoo.co.jp/search?p=' + encodeURIComponent(keyword))}" target="_blank" rel="nofollow sponsored noopener" class="btn-buy btn-yahoo">Yahoo!で見る</a>
+          </div>
         </div>
       </div>`).join("\n");
 
   return `<div class="product-list">\n${cards}\n    </div>`;
+}
+
+// ===== index.html 更新 =====
+
+function updateIndexHtml(articles) {
+  if (articles.length === 0) return;
+
+  let html = fs.readFileSync(INDEX_FILE, "utf-8");
+
+  const newCards = articles.map(({ slug, title, category, date }) => {
+    const emoji = CATEGORY_EMOJI[category] || CATEGORY_EMOJI["default"];
+    return `
+        <a href="articles/${slug}.html" class="article-card">
+          <div class="article-thumb">${emoji}</div>
+          <div class="article-body">
+            <div class="article-tags">
+              <span class="tag tag-primary">${category}</span>
+              <span class="tag">新着</span>
+            </div>
+            <p class="article-title">${title}</p>
+            <div class="article-meta">
+              <span>${date}</span>
+              <span>約5分で読めます</span>
+            </div>
+          </div>
+        </a>`;
+  }).join("\n");
+
+  // article-gridの先頭に挿入
+  html = html.replace(
+    /(<div class="article-grid">)/,
+    `$1\n${newCards}`
+  );
+
+  fs.writeFileSync(INDEX_FILE, html, "utf-8");
+  console.log(`  📄 index.html に ${articles.length} 件追加`);
 }
 
 // ===== 記事生成 =====
@@ -127,7 +182,6 @@ function buildProductHtml(products, keyword) {
 async function generateArticle(topic) {
   console.log(`  生成中: ${topic.title}`);
 
-  // 楽天から商品情報を取得
   const products = await fetchRakutenProducts(topic.product, 3);
   const productHtml = buildProductHtml(products, topic.product);
 
@@ -181,7 +235,6 @@ ${productSection}
       `<link rel="canonical" href="https://beauty-bests.com/articles/${slug}.html">`
     );
 
-  // 商品カードを記事本文の先頭付近(最初のh2の直前)に強制挿入する
   if (productHtml) {
     if (html.includes("<!-- PRODUCT_CARDS -->")) {
       html = html.replace("<!-- PRODUCT_CARDS -->", productHtml);
@@ -195,17 +248,15 @@ ${productSection}
     }
   }
 
-  return { slug, html };
+  return { slug, html, title: topic.title, category: topic.category };
 }
 
 // ===== Git操作 =====
 
 function gitPush(filenames) {
   try {
-    execSync(
-      `git -C "${ROOT_DIR}" add ${filenames.map((f) => `"articles/${f}"`).join(" ")}`,
-      { stdio: "pipe" }
-    );
+    const files = [...filenames.map((f) => `articles/${f}`), "index.html"].join(" ");
+    execSync(`git -C "${ROOT_DIR}" add ${files}`, { stdio: "pipe" });
     const msg = `自動記事生成: ${filenames.length}本追加 (${formatDate()})`;
     execSync(`git -C "${ROOT_DIR}" commit -m "${msg}"`, { stdio: "pipe" });
 
@@ -236,10 +287,10 @@ async function main() {
     process.exit(1);
   }
 
-  if (process.env.RAKUTEN_APP_ID && process.env.RAKUTEN_ACCESS_KEY) {
+  if (process.env.RAKUTEN_APP_ID) {
     console.log("🛍️ 楽天商品APIを使用します");
   } else {
-    console.log("⚠️ RAKUTEN_APP_ID / RAKUTEN_ACCESS_KEY未設定: 商品画像なしで生成します");
+    console.log("⚠️ RAKUTEN_APP_ID未設定: 商品画像なしで生成します");
   }
 
   const topics = loadTopics();
@@ -256,16 +307,18 @@ async function main() {
   console.log("─".repeat(40));
 
   const generatedFiles = [];
+  const indexArticles = [];
   let successCount = 0;
 
   for (const topic of todayTopics) {
     try {
-      const { slug, html } = await generateArticle(topic);
+      const { slug, html, title, category } = await generateArticle(topic);
       const filename = `${slug}.html`;
       const filepath = path.join(ARTICLES_DIR, filename);
 
       fs.writeFileSync(filepath, html, "utf-8");
       generatedFiles.push(filename);
+      indexArticles.push({ slug: filename.replace(".html", ""), title, category, date: formatDate() });
       successCount++;
       console.log(`  ✅ 保存: articles/${filename}`);
 
@@ -281,6 +334,7 @@ async function main() {
   console.log(`✨ 完了: ${successCount}/${ARTICLES_PER_DAY}本生成`);
 
   if (generatedFiles.length > 0) {
+    updateIndexHtml(indexArticles);
     console.log("📤 GitHubにpush中...");
     gitPush(generatedFiles);
   }
