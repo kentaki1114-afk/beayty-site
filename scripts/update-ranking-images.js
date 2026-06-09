@@ -1,6 +1,6 @@
 /**
  * ランキングカード商品画像更新スクリプト
- * Rakuten Items Search API で商品画像を取得し index.html に反映する
+ * product-img-placeholder と product-name を順序でペアリングして画像取得
  */
 
 import fs from "fs";
@@ -19,10 +19,10 @@ function httpsGet(url) {
         return httpsGet(res.headers.location).then(resolve).catch(reject);
       }
       let data = "";
-      res.on("data", (chunk) => (data += chunk));
+      res.on("data", (c) => (data += c));
       res.on("end", () => {
         try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 300)}`)); }
+        catch (e) { reject(new Error(data.slice(0, 200))); }
       });
     }).on("error", reject);
   });
@@ -30,117 +30,92 @@ function httpsGet(url) {
 
 async function fetchImageUrl(keyword) {
   const appId = process.env.RAKUTEN_APP_ID;
-  if (!appId) return null;
-
   const params = new URLSearchParams({
     applicationId: appId,
-    keyword: keyword,
+    keyword,
     hits: "1",
     imageFlag: "1",
     formatVersion: "2",
   });
-  const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
-  if (affiliateId) params.set("affiliateId", affiliateId);
-
-  const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params.toString()}`;
+  if (process.env.RAKUTEN_AFFILIATE_ID) params.set("affiliateId", process.env.RAKUTEN_AFFILIATE_ID);
 
   try {
-    const data = await httpsGet(url);
-    if (!data.Items || data.Items.length === 0) {
-      console.log(`    → 検索結果なし`);
-      return null;
-    }
-    const item = data.Items[0];
-    // formatVersion:2 では mediumImageUrls は文字列配列
-    const imgs = item.mediumImageUrls;
-    const imgUrl = Array.isArray(imgs)
-      ? (typeof imgs[0] === "object" ? imgs[0].imageUrl : imgs[0])
-      : null;
-    console.log(`    → ${imgUrl ? "画像取得OK" : "画像URLなし"}`);
-    return imgUrl || null;
+    const data = await httpsGet(
+      `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?${params}`
+    );
+    if (!data.Items?.length) { console.log("    → 結果なし"); return null; }
+    const imgs = data.Items[0].mediumImageUrls;
+    const url = typeof imgs?.[0] === "object" ? imgs[0].imageUrl : imgs?.[0];
+    console.log(`    → ${url ? "OK: " + url.slice(0, 60) + "…" : "画像URLなし"}`);
+    return url || null;
   } catch (e) {
     console.log(`    → API失敗: ${e.message}`);
     return null;
   }
 }
 
-// HTMLエンティティをデコード（&amp; → & など）
-function decodeHtmlEntities(str) {
-  return str
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'");
+function decodeHtml(s) {
+  return s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
 }
 
 async function main() {
   console.log("🖼️  ランキングカード商品画像更新開始");
-
-  if (!process.env.RAKUTEN_APP_ID) {
-    console.error("❌ RAKUTEN_APP_ID が設定されていません");
-    process.exit(1);
-  }
+  if (!process.env.RAKUTEN_APP_ID) { console.error("❌ RAKUTEN_APP_ID未設定"); process.exit(1); }
 
   let html = fs.readFileSync(INDEX_FILE, "utf-8");
 
-  // ranking-card ブロックを個別に処理
-  // placeholder が残っているカードのみ対象
-  const cardRegex = /(<div class="ranking-card"[^>]*>)([\s\S]*?)(?=<div class="ranking-card"|<\/div>\s*<\/section>)/g;
+  // placeholder と product-name を位置順にすべて収集
+  const placeholderRe = /<div class="product-img-placeholder">([^<]*)<\/div>/g;
+  const nameRe = /<div class="product-name">([^<]+)<\/div>/g;
 
-  let updatedCount = 0;
-  let totalCount = 0;
-  const replacements = []; // { search, replace } のリスト
+  const placeholders = []; // { index, fullMatch, emoji }
+  const names = [];        // { index, fullMatch, name }
 
-  let match;
-  while ((match = cardRegex.exec(html)) !== null) {
-    const cardHtml = match[0];
-
-    // placeholder が既に置き換えられているカードはスキップ
-    if (!cardHtml.includes('product-img-placeholder')) continue;
-
-    // product-name を抽出（HTMLエンティティあり）
-    const nameMatch = cardHtml.match(/<div class="product-name">([^<]+)<\/div>/);
-    if (!nameMatch) continue;
-
-    const nameInHtml = nameMatch[1].trim(); // HTML内の文字列（&amp;等を含む）
-    const nameForApi = decodeHtmlEntities(nameInHtml); // API検索用にデコード
-
-    totalCount++;
-    console.log(`  [${totalCount}] 検索: ${nameForApi}`);
-
-    await new Promise((r) => setTimeout(r, 800));
-    const imgUrl = await fetchImageUrl(nameForApi);
-
-    if (!imgUrl) continue;
-
-    // このカード内の placeholder だけを img に置換
-    // placeholder の直前にある product-img-wrap を特定
-    const oldBlock = `<div class="product-img-placeholder">[^<]*</div>`;
-    const newImg = `<img src="${imgUrl}" alt="${nameInHtml}" loading="lazy" style="width:100%;max-width:200px;height:auto;object-fit:contain;border-radius:8px;">`;
-
-    const updatedCard = cardHtml.replace(
-      new RegExp(oldBlock),
-      newImg
-    );
-
-    if (updatedCard !== cardHtml) {
-      replacements.push({ from: cardHtml, to: updatedCard, name: nameForApi });
-      updatedCount++;
-    }
+  let m;
+  while ((m = placeholderRe.exec(html)) !== null) {
+    placeholders.push({ index: m.index, fullMatch: m[0], emoji: m[1] });
+  }
+  while ((m = nameRe.exec(html)) !== null) {
+    names.push({ index: m.index, name: m[1].trim() });
   }
 
-  // まとめて置換（順序の依存を避けるため後から一括）
-  for (const { from, to, name } of replacements) {
-    html = html.replace(from, to);
-    console.log(`  ✅ 画像更新: ${name}`);
+  console.log(`  placeholder: ${placeholders.length}件 / product-name: ${names.length}件`);
+
+  // 各 placeholder の直後に来る product-name と対応させる
+  const pairs = placeholders.map((ph) => {
+    // ph.index より後にある最初の product-name
+    const paired = names.find((n) => n.index > ph.index);
+    return { ph, name: paired?.name || null };
+  });
+
+  // 画像取得して置換情報を収集（後ろから置換してindexがずれないようにする）
+  const replacements = [];
+
+  for (const { ph, name } of pairs) {
+    if (!name) { console.log("  ⚠️ 対応する商品名なし"); continue; }
+
+    const decodedName = decodeHtml(name);
+    console.log(`  検索: ${decodedName}`);
+    await new Promise((r) => setTimeout(r, 800));
+
+    const imgUrl = await fetchImageUrl(decodedName);
+    if (!imgUrl) continue;
+
+    replacements.push({
+      index: ph.index,
+      oldStr: ph.fullMatch,
+      newStr: `<img src="${imgUrl}" alt="${name}" loading="lazy" style="width:100%;max-width:180px;height:auto;object-fit:contain;border-radius:8px;">`,
+    });
+  }
+
+  // 後ろから置換（位置がずれないように）
+  replacements.sort((a, b) => b.index - a.index);
+  for (const { index, oldStr, newStr } of replacements) {
+    html = html.slice(0, index) + newStr + html.slice(index + oldStr.length);
   }
 
   fs.writeFileSync(INDEX_FILE, html, "utf-8");
-  console.log(`\n✨ 完了: ${updatedCount}/${totalCount} 件更新`);
+  console.log(`\n✨ 完了: ${replacements.length}/${placeholders.length}件更新`);
 }
 
-main().catch((err) => {
-  console.error("致命的エラー:", err);
-  process.exit(1);
-});
+main().catch((e) => { console.error(e); process.exit(1); });
