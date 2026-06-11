@@ -22,6 +22,7 @@ const ARTICLES_DIR = path.join(ROOT_DIR, "articles");
 const TOPICS_FILE = path.join(__dirname, "topics.json");
 const PROGRESS_FILE = path.join(__dirname, "progress.json");
 const INDEX_FILE = path.join(ROOT_DIR, "index.html");
+const SITEMAP_FILE = path.join(ROOT_DIR, "sitemap.xml");
 
 const ARTICLES_PER_DAY = 5;
 
@@ -151,7 +152,7 @@ function updateIndexHtml(articles) {
   const newCards = articles.map(({ slug, title, category, date }) => {
     const emoji = CATEGORY_EMOJI[category] || CATEGORY_EMOJI["default"];
     return `
-        <a href="articles/${slug}.html" class="article-card">
+        <a href="articles/${slug}.html" class="article-card" data-category="${category}">
           <div class="article-thumb">${emoji}</div>
           <div class="article-body">
             <div class="article-tags">
@@ -167,14 +168,49 @@ function updateIndexHtml(articles) {
         </a>`;
   }).join("\n");
 
-  // article-gridの先頭に挿入
+  // article-gridの先頭に挿入(id属性等が付与されていてもマッチするように)
+  const before = html;
   html = html.replace(
-    /(<div class="article-grid">)/,
+    /(<div class="article-grid"[^>]*>)/,
     `$1\n${newCards}`
   );
 
+  if (html === before) {
+    console.warn("  ⚠️ article-grid が見つからず index.html を更新できませんでした");
+    return;
+  }
+
   fs.writeFileSync(INDEX_FILE, html, "utf-8");
   console.log(`  📄 index.html に ${articles.length} 件追加`);
+}
+
+// ===== sitemap.xml 更新 =====
+
+function updateSitemap(articles) {
+  if (articles.length === 0) return;
+  if (!fs.existsSync(SITEMAP_FILE)) {
+    console.warn("  ⚠️ sitemap.xml が見つかりません");
+    return;
+  }
+
+  let xml = fs.readFileSync(SITEMAP_FILE, "utf-8");
+
+  const newEntries = articles.map(({ slug }) => `  <url>
+    <loc>https://beauty-bests.com/articles/${slug}.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join("\n");
+
+  const before = xml;
+  xml = xml.replace(/(<\/urlset>)/, `${newEntries}\n$1`);
+
+  if (xml === before) {
+    console.warn("  ⚠️ </urlset> が見つからず sitemap.xml を更新できませんでした");
+    return;
+  }
+
+  fs.writeFileSync(SITEMAP_FILE, xml, "utf-8");
+  console.log(`  🗺️ sitemap.xml に ${articles.length} 件追加`);
 }
 
 // ===== 重複チェック =====
@@ -309,7 +345,7 @@ function gitPush(filenames) {
   }
 
   try {
-    const files = [...filenames.map((f) => `articles/${f}`), "index.html"].join(" ");
+    const files = [...filenames.map((f) => `articles/${f}`), "index.html", "sitemap.xml"].join(" ");
     execSync(`git -C "${ROOT_DIR}" add ${files}`, { stdio: "pipe" });
     const msg = `自動記事生成: ${filenames.length}本追加 (${formatDate()})`;
     execSync(`git -C "${ROOT_DIR}" commit -m "${msg}"`, { stdio: "pipe" });
@@ -398,6 +434,7 @@ async function main() {
 
   if (generatedFiles.length > 0) {
     updateIndexHtml(indexArticles);
+    updateSitemap(indexArticles);
     console.log("📤 GitHubにpush中...");
     gitPush(generatedFiles);
   }

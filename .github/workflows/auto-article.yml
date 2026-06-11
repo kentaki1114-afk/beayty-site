@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name "BeautyBests Bot"
           git config user.email "kentaki1114@gmail.com"
-          git add articles/ index.html scripts/progress.json
+          git add articles/ index.html sitemap.xml scripts/progress.json
           git diff --staged --quiet || git commit -m "🌸 自動記事生成: $(date +'%Y-%m-%d')"
           git push
         working-directory: ./
